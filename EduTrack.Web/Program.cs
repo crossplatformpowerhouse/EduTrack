@@ -1,3 +1,4 @@
+using EduTrack.Shared.Services;
 using EduTrack.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add configuration
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+// Register services
+builder.Services.AddSingleton<IEduTrackService, EduTrackService>();
 
 var app = builder.Build();
 

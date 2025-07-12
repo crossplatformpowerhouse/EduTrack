@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EduTrack.Shared.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace EduTrack
 {
@@ -14,7 +16,13 @@ namespace EduTrack
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            builder.Services.AddMauiBlazorWebView();
+			// Add configuration from appsettings.json
+			using var stream = FileSystem.OpenAppPackageFileAsync("appsettings.json").GetAwaiter().GetResult();
+			builder.Configuration.AddJsonStream(stream);
+
+			// Register services
+			builder.Services.AddSingleton<IEduTrackService, EduTrackService>();
+			builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
