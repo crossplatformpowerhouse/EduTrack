@@ -1,0 +1,93 @@
+﻿
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">EduTrack</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Dashboard
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="profileinformation">
+                <span class="oi oi-person" aria-hidden="true"></span> Profile Information
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="accountsecurity">
+                <span class="oi oi-lock-locked" aria-hidden="true"></span> Account Security
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="users">
+                <span class="oi oi-person" aria-hidden="true"></span> Users
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="coursetypes">
+                <span class="oi oi-list" aria-hidden="true"></span> Course Types
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="courses">
+                <span class="oi oi-book" aria-hidden="true"></span> Courses
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="subjects">
+                <span class="oi oi-clipboard" aria-hidden="true"></span> Subjects
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="assignmenttypes">
+                <span class="oi oi-task" aria-hidden="true"></span> Assignment Types
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examtypes">
+                <span class="oi oi-document" aria-hidden="true"></span> Exam Types
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="assignments">
+                <span class="oi oi-pencil" aria-hidden="true"></span> Assignments
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="grades">
+                <span class="oi oi-star" aria-hidden="true"></span> Grades
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="accounts">
+                <span class="oi oi-cog" aria-hidden="true"></span> Accounts
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="abouts">
+                <span class="oi oi-info" aria-hidden="true"></span> Abouts
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="studentdetails">
+                <span class="oi oi-spreadsheet" aria-hidden="true"></span> Student Details
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
