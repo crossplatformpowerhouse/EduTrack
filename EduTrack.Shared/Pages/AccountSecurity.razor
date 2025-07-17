@@ -1,0 +1,102 @@
+﻿
+@page "/accountsecurity"
+@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+@inject NavigationManager NavigationManager
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Account Security</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (account == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <h4 class="text-lg font-semibold mb-2">Account Settings</h4>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Receive Email Notifications</label>
+                <input type="checkbox" @bind="account.ReceiveEmailNotifications" class="mt-1" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Receive Push Notifications</label>
+                <input type="checkbox" @bind="account.ReceivePushNotifications" class="mt-1" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Theme Preference</label>
+                <select @bind="account.ThemePreference" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                    <option value="Light">Light</option>
+                    <option value="Dark">Dark</option>
+                    <option value="System">System</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Last Login</label>
+                <p class="mt-1">@account.LastLogin</p>
+            </div>
+            <div class="flex space-x-2">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" @onclick="UpdateAccount">Update Settings</button>
+                <button class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h4 class="text-lg font-semibold mb-2">Change Password</h4>
+        <p class="text-gray-500">Password change functionality requires integration with an authentication provider (e.g., ASP.NET Identity). Please contact your administrator to update your password.</p>
+        <!-- Placeholder for future password change implementation -->
+    </div>
+}
+
+@code {
+    private Account? account;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var accounts = await EduTrackService.GetAccountsAsync();
+            account = accounts.FirstOrDefault(a => a.UserId == 1); // Assume UserId = 1 for student1
+            if (account == null)
+            {
+                errorMessage = "Account not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading account settings: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateAccount()
+    {
+        if (account == null)
+        {
+            errorMessage = "Account data is missing.";
+            return;
+        }
+
+        try
+        {
+            await EduTrackService.UpdateAccountAsync(account);
+            errorMessage = "Account settings updated successfully.";
+            NavigationManager.NavigateTo("/accountsecurity", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating account settings: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        NavigationManager.NavigateTo("/accountsecurity", true);
+    }
+}
