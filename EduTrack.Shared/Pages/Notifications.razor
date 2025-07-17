@@ -1,0 +1,73 @@
+﻿
+@page "/notifications"
+@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+@inject NavigationManager NavigationManager
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Notifications</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (notifications == null)
+{
+    <p>Loading...</p>
+}
+else if (!notifications.Any())
+{
+    <p class="text-gray-500">No notifications available.</p>
+}
+else
+{
+    <div class="space-y-4">
+        @foreach (var notification in notifications)
+        {
+            <div class="bg-white p-4 rounded-lg shadow flex justify-between items-center @(!notification.IsRead ? "border-l-4 border-blue-500" : "")">
+                <div>
+                    <p class="font-semibold @(!notification.IsRead ? "text-blue-600" : "text-gray-600")">@notification.NotificationType</p>
+                    <p class="text-gray-700">@notification.Message</p>
+                    <p class="text-sm text-gray-500">@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
+                </div>
+                @if (!notification.IsRead)
+                {
+                    <button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600" @onclick="() => DismissNotification(notification.Id)">Dismiss</button>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IEnumerable<Notification>? notifications;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            notifications = await EduTrackService.GetNotificationsAsync(1); // UserId = 1 for student1
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading notifications: {ex.Message}";
+        }
+    }
+
+    private async Task DismissNotification(int id)
+    {
+        try
+        {
+            await EduTrackService.DeleteNotificationAsync(id);
+            notifications = await EduTrackService.GetNotificationsAsync(1);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error dismissing notification: {ex.Message}";
+        }
+    }
+}
+
