@@ -1,0 +1,62 @@
+﻿
+@page "/abouts"
+@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Abouts</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (abouts == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="min-w-full bg-white border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="py-2 px-4 border-b">ID</th>
+                <th class="py-2 px-4 border-b">User ID</th>
+                <th class="py-2 px-4 border-b">Bio</th>
+                <th class="py-2 px-4 border-b">App Version</th>
+                <th class="py-2 px-4 border-b">Last Updated</th>
+                <th class="py-2 px-4 border-b">Created Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var about in abouts)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@about.Id</td>
+                    <td class="py-2 px-4 border-b">@about.UserId</td>
+                    <td class="py-2 px-4 border-b">@about.Bio</td>
+                    <td class="py-2 px-4 border-b">@about.AppVersion</td>
+                    <td class="py-2 px-4 border-b">@about.LastUpdated</td>
+                    <td class="py-2 px-4 border-b">@about.CreatedDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<About>? abouts;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            abouts = await EduTrackService.GetAboutsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading abouts: {ex.Message}";
+        }
+    }
+}
