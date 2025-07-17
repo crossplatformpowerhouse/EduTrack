@@ -1,0 +1,145 @@
+﻿
+@page "/progress"
+@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+@inject NavigationManager NavigationManager
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<h3 class="text-2xl font-bold mb-4">Student Dashboard</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (studentDetails == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="text-lg font-semibold mb-2">Student Information</h4>
+            <p><strong>Name:</strong> @studentDetails.FirstOrDefault()?.FirstName @studentDetails.FirstOrDefault()?.LastName</p>
+            <p><strong>Email:</strong> @studentDetails.FirstOrDefault()?.Email</p>
+            <p><strong>Course:</strong> @studentDetails.FirstOrDefault()?.Course ( @studentDetails.FirstOrDefault()?.CourseType )</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="text-lg font-semibold mb-2">Progress Summary</h4>
+            <p><strong>Average Final Mark:</strong> @averageFinalMark.ToString("F2")%</p>
+            <p><strong>Distinctions:</strong> @distinctions</p>
+            <p><strong>Passes:</strong> @passes</p>
+            <p><strong>Fails:</strong> @fails</p>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <h4 class="text-lg font-semibold mb-2">Final Marks by Subject</h4>
+        <canvas id="gradesChart" class="w-full h-64"></canvas>
+    </div>
+    <table class="min-w-full bg-white border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="py-2 px-4 border-b">Subject</th>
+                <th class="py-2 px-4 border-b">Academic Year</th>
+                <th class="py-2 px-4 border-b">Semester</th>
+                <th class="py-2 px-4 border-b">Assignment Title</th>
+                <th class="py-2 px-4 border-b">Assignment Type</th>
+                <th class="py-2 px-4 border-b">Exam Type</th>
+                <th class="py-2 px-4 border-b">Grade</th>
+                <th class="py-2 px-4 border-b">Final Mark</th>
+                <th class="py-2 px-4 border-b">Predicate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in studentDetails)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@detail.Subject</td>
+                    <td class="py-2 px-4 border-b">@detail.AcademicYear</td>
+                    <td class="py-2 px-4 border-b">@detail.Semester</td>
+                    <td class="py-2 px-4 border-b">@detail.AssignmentTitle</td>
+                    <td class="py-2 px-4 border-b">@detail.AssignmentType</td>
+                    <td class="py-2 px-4 border-b">@detail.ExamType</td>
+                    <td class="py-2 px-4 border-b">@detail.Grade</td>
+                    <td class="py-2 px-4 border-b">@detail.FinalMark</td>
+                    <td class="py-2 px-4 border-b">@detail.Predicate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<StudentDetailsDto>? studentDetails;
+    private string? errorMessage;
+    private double averageFinalMark;
+    private int distinctions;
+    private int passes;
+    private int fails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            studentDetails = await EduTrackService.GetStudentDetailsAsync(1); // UserId = 1 for student1
+            if (studentDetails != null && studentDetails.Any())
+            {
+                // Calculate summary statistics
+                var finalMarks = studentDetails.GroupBy(d => d.Subject)
+                    .Select(g => g.First().FinalMark)
+                    .ToList();
+                //averageFinalMark = finalMarks.Any() ? finalMarks.Average() : 0;
+                averageFinalMark = 200;
+                distinctions = studentDetails.Count(d => d.Predicate == "Distinction");
+                passes = studentDetails.Count(d => d.Predicate == "Pass");
+                fails = studentDetails.Count(d => d.Predicate == "Fail");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading dashboard: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && studentDetails != null && studentDetails.Any())
+        {
+            var subjects = studentDetails.GroupBy(d => d.Subject).Select(g => g.Key).ToArray();
+            var finalMarks = studentDetails.GroupBy(d => d.Subject).Select(g => g.First().FinalMark).ToArray();
+
+           // await JSRuntime.InvokeVoidAsync("renderChart", subjects, finalMarks);
+        }
+    }
+}
+
+<script>
+    window.renderChart = (subjects, finalMarks) => {
+        const ctx = document.getElementById('gradesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: subjects,
+                datasets: [{
+                    label: 'Final Marks (%)',
+                    data: finalMarks,
+                    backgroundColor: ['#4CAF50', '#2196F3', '#FFC107'],
+                    borderColor: ['#388E3C', '#1976D2', '#FFA000'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    };
+</script>
