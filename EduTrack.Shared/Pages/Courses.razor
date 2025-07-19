@@ -1,6 +1,5 @@
-﻿
-@page "/courses"
-@using EduTrack.Shared.Modules
+﻿@page "/courses"
+@using EduTrack.Shared.Models
 @using EduTrack.Shared.Services
 @inject IEduTrackService EduTrackService
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -21,11 +20,12 @@ else
         <thead>
             <tr class="bg-gray-100">
                 <th class="py-2 px-4 border-b">ID</th>
-                <th class="py-2 px-4 border-b">User ID</th>
-                <th class="py-2 px-4 border-b">Course Type ID</th>
-                <th class="py-2 px-4 border-b">Name</th>
+                <th class="py-2 px-4 border-b">Course Type</th>
+                <th class="py-2 px-4 border-b">Code</th>
+                <th class="py-2 px-4 border-b">Description</th>
                 <th class="py-2 px-4 border-b">Duration (Years)</th>
-                <th class="py-2 px-4 border-b">Created Date</th>
+                <th class="py-2 px-4 border-b">Last Modified By</th>
+                <th class="py-2 px-4 border-b">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -33,30 +33,123 @@ else
             {
                 <tr class="hover:bg-gray-50">
                     <td class="py-2 px-4 border-b">@course.Id</td>
-                    <td class="py-2 px-4 border-b">@course.UserId</td>
-                    <td class="py-2 px-4 border-b">@course.CourseTypeId</td>
-                    <td class="py-2 px-4 border-b">@course.Name</td>
-                    <td class="py-2 px-4 border-b">@course.DurationYears</td>
-                    <td class="py-2 px-4 border-b">@course.CreatedDate</td>
+                    <td class="py-2 px-4 border-b">@(courseTypes.FirstOrDefault(ct => ct.Id == course.CourseTypeId)?.Description ?? "N/A")</td>
+                    <td class="py-2 px-4 border-b">@course.Code</td>
+                    <td class="py-2 px-4 border-b">@course.Description</td>
+                    <td class="py-2 px-4 border-b">@course.Duration</td>
+                    <td class="py-2 px-4 border-b">@course.LastModifiedBy</td>
+                    <td class="py-2 px-4 border-b">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" @onclick="() => EditCourse(course)">Edit</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded ml-2" @onclick="() => DeleteCourse(course.Id)">Delete</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
+
+    <h4 class="text-xl font-bold mt-6 mb-4">@(editCourse.Id == 0 ? "Add Course" : "Edit Course")</h4>
+    <EditForm Model="editCourse" OnValidSubmit="SaveCourse">
+        <DataAnnotationsValidator />
+     @*    <div class="mb-4">
+            <label class="block text-gray-700">Course Type</label>
+            <InputSelect @bind-Value="editCourse.CourseTypeId" class="w-full border border-gray-300 rounded p-2">
+                <option value="0">Select...</option>
+                @foreach (var courseType in courseTypes)
+                {
+                    <option value="@courseType.Id">@courseType.Description</option>
+                }
+            </InputSelect>
+        </div> *@
+     @*    <div class="mb-4">
+            <label class="block text-gray-700">Code</label>
+            <InputText @bind-Value="editCourse.Code" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Description</label>
+            <InputText @bind-Value="editCourse.Description" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Duration (Years)</label>
+            <InputNumber @bind-Value="editCourse.Duration" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+        <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2" @onclick="CancelEdit">Cancel</button> *@
+    </EditForm>
 }
 
 @code {
     private IEnumerable<Course>? courses;
+    private IEnumerable<CourseType>? courseTypes;
+    private Course editCourse = new Course();
     private string? errorMessage;
+    private const string currentUsername = "bthibela";
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             courses = await EduTrackService.GetCoursesAsync();
+            courseTypes = await EduTrackService.GetCourseTypesAsync();
         }
         catch (Exception ex)
         {
             errorMessage = $"Error loading courses: {ex.Message}";
         }
+    }
+
+    private void EditCourse(Course course)
+    {
+        editCourse = new Course
+        {
+            Id = course.Id,
+            CourseTypeId = course.CourseTypeId,
+            Code = course.Code,
+            Description = course.Description,
+            Duration = course.Duration,
+            LastModifiedBy = currentUsername
+        };
+    }
+
+    private async Task SaveCourse()
+    {
+        try
+        {
+            editCourse.LastModifiedBy = currentUsername;
+            if (editCourse.Id == 0)
+            {
+                await EduTrackService.AddCourseAsync(editCourse);
+            }
+            else
+            {
+                await EduTrackService.UpdateCourseAsync(editCourse);
+            }
+            courses = await EduTrackService.GetCoursesAsync();
+            editCourse = new Course();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving course: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteCourse(int id)
+    {
+        try
+        {
+            await EduTrackService.DeleteCourseAsync(id);
+            courses = await EduTrackService.GetCoursesAsync();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting course: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editCourse = new Course();
+        errorMessage = null;
     }
 }

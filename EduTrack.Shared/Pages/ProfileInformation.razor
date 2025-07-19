@@ -1,13 +1,13 @@
 ﻿
 @page "/profileinformation"
-@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Models
 @using EduTrack.Shared.Services
 @inject IEduTrackService EduTrackService
 @inject NavigationManager NavigationManager
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
 <h3 class="text-2xl font-bold mb-4">Profile Information</h3>
-
+@* 
 @if (errorMessage != null)
 {
     <p class="text-red-500">@errorMessage</p>
@@ -23,7 +23,7 @@ else
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Username</label>
-                <input type="text" @bind="user.Username" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required />
+                <input type="text" @bind="user.Username" />
                 @if (string.IsNullOrEmpty(user.Username))
                 {
                     <p class="text-red-500 text-sm">Username is required.</p>
@@ -121,3 +121,4 @@ else
         }
     }
 }
+ *@

@@ -1,6 +1,6 @@
 ﻿
 @page "/coursetypes"
-@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Models
 @using EduTrack.Shared.Services
 @inject IEduTrackService EduTrackService
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -30,8 +30,8 @@ else
             {
                 <tr class="hover:bg-gray-50">
                     <td class="py-2 px-4 border-b">@courseType.Id</td>
-                    <td class="py-2 px-4 border-b">@courseType.Name</td>
-                    <td class="py-2 px-4 border-b">@courseType.CreatedDate</td>
+                    <td class="py-2 px-4 border-b">@courseType.Description</td>
+                    <td class="py-2 px-4 border-b">@courseType.LastModifiedBy</td>
                 </tr>
             }
         </tbody>

@@ -1,44 +1,45 @@
-﻿
-@page "/studentdetails"
-@using EduTrack.Shared.Modules
+﻿@page "/studentdetails"
+@using EduTrack.Shared.Models
 @using EduTrack.Shared.Services
 @inject IEduTrackService EduTrackService
+
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-<h3 class="text-2xl font-bold mb-4">Student Details (Student1)</h3>
+<h3 class="text-2xl font-bold mb-4">Student Details</h3>
 
 @if (errorMessage != null)
 {
     <p class="text-red-500">@errorMessage</p>
 }
-else if (studentDetails == null)
+else if (studentDetails == null || !studentDetails.Any())
 {
-    <p>Loading...</p>
+    <p>No student result data available.</p>
 }
 else
 {
-    <div class="mb-4">
-        <p><strong>First Name:</strong> @studentDetails.FirstOrDefault()?.FirstName</p>
-        <p><strong>Last Name:</strong> @studentDetails.FirstOrDefault()?.LastName</p>
-        <p><strong>Email:</strong> @studentDetails.FirstOrDefault()?.Email</p>
-        <p><strong>Course Type:</strong> @studentDetails.FirstOrDefault()?.CourseType</p>
-        <p><strong>Course:</strong> @studentDetails.FirstOrDefault()?.Course</p>
+    var student = studentDetails.First();
+
+    <div class="mb-6 space-y-1">
+        <p><strong>Username:</strong> @student.Username</p>
+        <p><strong>First Name:</strong> @student.FirstName</p>
+        <p><strong>Last Name:</strong> @student.LastName</p>
+        <p><strong>Email:</strong> @student.Email</p>
+        <p><strong>School:</strong> @student.School</p>
+        <p><strong>Course Code:</strong> @student.CourseCode</p>
+        <p><strong>Course Description:</strong> @student.CourseDescription</p>
+        <p><strong>Course Type:</strong> @student.CourseType</p>
     </div>
-    <table class="min-w-full bg-white border border-gray-300">
-        <thead>
-            <tr class="bg-gray-100">
-                <th class="py-2 px-4 border-b">Subject</th>
+
+    <table class="min-w-full bg-white border border-gray-300 text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 border-b">Subject Code</th>
+                <th class="py-2 px-4 border-b">Subject Description</th>
                 <th class="py-2 px-4 border-b">Academic Year</th>
-                <th class="py-2 px-4 border-b">Semester</th>
-                <th class="py-2 px-4 border-b">Assignment Title</th>
-                <th class="py-2 px-4 border-b">Assignment Type</th>
-                <th class="py-2 px-4 border-b">Exam Type</th>
-                <th class="py-2 px-4 border-b">Grade</th>
-                <th class="py-2 px-4 border-b">Class Test Avg</th>
-                <th class="py-2 px-4 border-b">Semester Test Avg</th>
-                <th class="py-2 px-4 border-b">Class Assignment Avg</th>
-                <th class="py-2 px-4 border-b">Semester Assignment Avg</th>
-                <th class="py-2 px-4 border-b">Exam Mark</th>
+                <th class="py-2 px-4 border-b">Pass Mark</th>
+                <th class="py-2 px-4 border-b">Assessment Code</th>
+                <th class="py-2 px-4 border-b">Assessment Description</th>
+                <th class="py-2 px-4 border-b">Mark</th>
                 <th class="py-2 px-4 border-b">Final Mark</th>
                 <th class="py-2 px-4 border-b">Predicate</th>
             </tr>
@@ -47,18 +48,13 @@ else
             @foreach (var detail in studentDetails)
             {
                 <tr class="hover:bg-gray-50">
-                    <td class="py-2 px-4 border-b">@detail.Subject</td>
+                    <td class="py-2 px-4 border-b">@detail.SubjectCode</td>
+                    <td class="py-2 px-4 border-b">@detail.SubjectDescription</td>
                     <td class="py-2 px-4 border-b">@detail.AcademicYear</td>
-                    <td class="py-2 px-4 border-b">@detail.Semester</td>
-                    <td class="py-2 px-4 border-b">@detail.AssignmentTitle</td>
-                    <td class="py-2 px-4 border-b">@detail.AssignmentType</td>
-                    <td class="py-2 px-4 border-b">@detail.ExamType</td>
-                    <td class="py-2 px-4 border-b">@detail.Grade</td>
-                    <td class="py-2 px-4 border-b">@detail.ClassTestAvg</td>
-                    <td class="py-2 px-4 border-b">@detail.SemesterTestAvg</td>
-                    <td class="py-2 px-4 border-b">@detail.ClassAssignmentAvg</td>
-                    <td class="py-2 px-4 border-b">@detail.SemesterAssignmentAvg</td>
-                    <td class="py-2 px-4 border-b">@detail.ExamMark</td>
+                    <td class="py-2 px-4 border-b">@detail.PassMark</td>
+                    <td class="py-2 px-4 border-b">@detail.AssessmentCode</td>
+                    <td class="py-2 px-4 border-b">@detail.AssessmentDescription</td>
+                    <td class="py-2 px-4 border-b">@detail.Mark</td>
                     <td class="py-2 px-4 border-b">@detail.FinalMark</td>
                     <td class="py-2 px-4 border-b">@detail.Predicate</td>
                 </tr>
@@ -68,14 +64,15 @@ else
 }
 
 @code {
-    private IEnumerable<StudentDetailsDto>? studentDetails;
+    private IEnumerable<StudentResultDto>? studentDetails;
     private string? errorMessage;
+    private int studentId = 1; // Example: Student1
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            studentDetails = await EduTrackService.GetStudentDetailsAsync(1); // UserId = 1 for student1
+            studentDetails = await EduTrackService.GetStudentResultsAsync(studentId);
         }
         catch (Exception ex)
         {

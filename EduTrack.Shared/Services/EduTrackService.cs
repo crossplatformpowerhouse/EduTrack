@@ -1,12 +1,11 @@
 ﻿using Dapper;
-using EduTrack.Shared.Modules;
+using EduTrack.Shared.Models;
+using EduTrack.Shared.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EduTrack.Shared.Services
@@ -21,18 +20,48 @@ namespace EduTrack.Shared.Services
 				?? throw new ArgumentNullException(nameof(configuration), "Connection string 'EduTrackDb' not found.");
 		}
 
-		// Read methods (unchanged)
-		public async Task<IEnumerable<User>> GetUsersAsync()
+		// Read methods
+		public async Task<IEnumerable<UserType>> GetUserTypesAsync()
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
-				return await connection.QueryAsync<User>("spGetUsers", commandType: CommandType.StoredProcedure);
+				return await connection.QueryAsync<UserType>("spGetUserTypes", commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error fetching users: {ex.Message}");
+				Console.WriteLine($"Error fetching user types: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<IEnumerable<SchoolType>> GetSchoolTypesAsync()
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.QueryAsync<SchoolType>("spGetSchoolTypes", commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error fetching school types: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<IEnumerable<School>> GetSchoolsAsync()
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.QueryAsync<School>("spGetSchools", commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error fetching schools: {ex.Message}");
 				throw;
 			}
 		}
@@ -67,6 +96,21 @@ namespace EduTrack.Shared.Services
 			}
 		}
 
+		public async Task<IEnumerable<User>> GetUsersAsync()
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.QueryAsync<User>("spGetUsers", commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error fetching users: {ex.Message}");
+				throw;
+			}
+		}
+
 		public async Task<IEnumerable<Subject>> GetSubjectsAsync()
 		{
 			try
@@ -82,140 +126,159 @@ namespace EduTrack.Shared.Services
 			}
 		}
 
-		public async Task<IEnumerable<AssignmentType>> GetAssignmentTypesAsync()
+		public async Task<IEnumerable<Assessment>> GetAssessmentsAsync()
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
-				return await connection.QueryAsync<AssignmentType>("spGetAssignmentTypes", commandType: CommandType.StoredProcedure);
+				return await connection.QueryAsync<Assessment>("spGetAssessments", commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error fetching assignment types: {ex.Message}");
+				Console.WriteLine($"Error fetching assessments: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task<IEnumerable<ExamType>> GetExamTypesAsync()
+		public async Task<IEnumerable<Result>> GetResultsAsync()
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
-				return await connection.QueryAsync<ExamType>("spGetExamTypes", commandType: CommandType.StoredProcedure);
+				return await connection.QueryAsync<Result>("spGetResults", commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error fetching exam types: {ex.Message}");
+				Console.WriteLine($"Error fetching results: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task<IEnumerable<Assignment>> GetAssignmentsAsync()
+		public async Task<IEnumerable<Notification>> GetNotificationsAsync(int userId)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
-				return await connection.QueryAsync<Assignment>("spGetAssignments", commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error fetching assignments: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<IEnumerable<Grade>> GetGradesAsync()
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.QueryAsync<Grade>("spGetGrades", commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error fetching grades: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<IEnumerable<Account>> GetAccountsAsync()
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.QueryAsync<Account>("spGetAccounts", commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error fetching accounts: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<IEnumerable<About>> GetAboutsAsync()
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.QueryAsync<About>("spGetAbouts", commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error fetching abouts: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<IEnumerable<StudentDetailsDto>> GetStudentDetailsAsync(int userId)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.QueryAsync<StudentDetailsDto>(
-					"spGetStudentDetails",
+				var users = await connection.QueryAsync<User>("spGetUsers", commandType: CommandType.StoredProcedure);
+				var user = users.FirstOrDefault(u => u.Id == userId);
+				if (user == null || !user.ReceivePushNotifications)
+				{
+					return new List<Notification>();
+				}
+				return await connection.QueryAsync<Notification>(
+					"spGetNotifications",
 					new { UserId = userId },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error fetching student details: {ex.Message}");
+				Console.WriteLine($"Error fetching notifications: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<IEnumerable<StudentResultDto>> GetStudentResultsAsync(int userId)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.QueryAsync<StudentResultDto>(
+					"spGetStudentResults",
+					new { UserId = userId },
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error fetching student results: {ex.Message}");
 				throw;
 			}
 		}
 
 		// Create methods
-		public async Task<int> AddUserAsync(User user)
+		public async Task<int> AddUserTypeAsync(UserType userType)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				return await connection.ExecuteScalarAsync<int>(
-					"spAddUser",
+					"spAddUserType",
 					new
 					{
-						user.Username,
-						user.PasswordHash,
-						user.Email,
-						user.FirstName,
-						user.LastName,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						userType.Description,
+						userType.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error adding user: {ex.Message}");
+				Console.WriteLine($"Error adding user type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<int> AddSchoolTypeAsync(SchoolType schoolType)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.ExecuteScalarAsync<int>(
+					"spAddSchoolType",
+					new
+					{
+						schoolType.Description,
+						schoolType.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error adding school type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<int> AddSchoolAsync(School school)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.ExecuteScalarAsync<int>(
+					"spAddSchool",
+					new
+					{
+						school.EMISNumber,
+						school.Description,
+						school.SchoolTypeId,
+						school.Phase,
+						school.Level,
+						school.Country,
+						school.Province,
+						school.District,
+						school.Circuit,
+						school.Municipality,
+						school.UrbanRural,
+						school.AddressLine1,
+						school.AddressLine2,
+						school.TownCity,
+						school.PostalCode,
+						school.PhoneNumber,
+						school.Email,
+						school.Latitude,
+						school.Longitude,
+						school.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error adding school: {ex.Message}");
 				throw;
 			}
 		}
@@ -230,11 +293,9 @@ namespace EduTrack.Shared.Services
 					"spAddCourseType",
 					new
 					{
-						courseType.Name,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						courseType.Code,
+						courseType.Description,
+						courseType.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
@@ -255,20 +316,50 @@ namespace EduTrack.Shared.Services
 					"spAddCourse",
 					new
 					{
-						course.UserId,
 						course.CourseTypeId,
-						course.Name,
-						course.DurationYears,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						course.Code,
+						course.Description,
+						course.Duration,
+						course.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error adding course: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task<int> AddUserAsync(User user)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				return await connection.ExecuteScalarAsync<int>(
+					"spAddUser",
+					new
+					{
+						user.UserTypeId,
+						user.SchoolId,
+						user.CourseId,
+						user.Username,
+						user.FirstName,
+						user.LastName,
+						user.PasswordHash,
+						user.Email,
+						user.Cellphone,
+						user.ReceiveEmailNotifications,
+						user.ReceivePushNotifications,
+						user.ThemePreference,
+						user.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error adding user: {ex.Message}");
 				throw;
 			}
 		}
@@ -283,20 +374,12 @@ namespace EduTrack.Shared.Services
 					"spAddSubject",
 					new
 					{
-						subject.UserId,
 						subject.CourseId,
-						subject.Name,
+						subject.Code,
+						subject.Description,
 						subject.AcademicYear,
 						subject.PassMark,
-						subject.ClassTestWeight,
-						subject.SemesterTestWeight,
-						subject.ClassAssignmentWeight,
-						subject.SemesterAssignmentWeight,
-						subject.ExamWeight,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						subject.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
@@ -307,196 +390,167 @@ namespace EduTrack.Shared.Services
 			}
 		}
 
-		public async Task<int> AddAssignmentTypeAsync(AssignmentType assignmentType)
+		public async Task<int> AddAssessmentAsync(Assessment assessment)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				return await connection.ExecuteScalarAsync<int>(
-					"spAddAssignmentType",
+					"spAddAssessment",
 					new
 					{
-						assignmentType.Name,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						assessment.SubjectId,
+						assessment.Code,
+						assessment.Description,
+						assessment.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error adding assignment type: {ex.Message}");
+				Console.WriteLine($"Error adding assessment: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task<int> AddExamTypeAsync(ExamType examType)
+		public async Task<int> AddResultAsync(Result result)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				return await connection.ExecuteScalarAsync<int>(
-					"spAddExamType",
+					"spAddResult",
 					new
 					{
-						examType.Name,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						result.UserId,
+						result.CourseId,
+						result.SubjectId,
+						result.AssessmentId,
+						result.Mark,
+						result.FinalMark,
+						result.Predicate,
+						result.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error adding exam type: {ex.Message}");
+				Console.WriteLine($"Error adding result: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task<int> AddAssignmentAsync(Assignment assignment)
+		public async Task<int> AddNotificationAsync(Notification notification)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				return await connection.ExecuteScalarAsync<int>(
-					"spAddAssignment",
+					"spAddNotification",
 					new
 					{
-						assignment.UserId,
-						assignment.SubjectId,
-						assignment.AssignmentTypeId,
-						assignment.ExamTypeId,
-						assignment.Title,
-						assignment.Deadline,
-						assignment.Semester,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						notification.UserId,
+						notification.Message,
+						notification.NotificationType,
+						notification.IsRead,
+						notification.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error adding assignment: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<int> AddGradeAsync(Grade grade)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.ExecuteScalarAsync<int>(
-					"spAddGrade",
-					new
-					{
-						grade.UserId,
-						grade.AssignmentId,
-						grade.GradeValue,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error adding grade: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<int> AddAccountAsync(Account account)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.ExecuteScalarAsync<int>(
-					"spAddAccount",
-					new
-					{
-						account.UserId,
-						account.ReceiveEmailNotifications,
-						account.ReceivePushNotifications,
-						account.ThemePreference,
-						account.LastLogin,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error adding account: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<int> AddAboutAsync(About about)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.ExecuteScalarAsync<int>(
-					"spAddAbout",
-					new
-					{
-						about.UserId,
-						about.Bio,
-						about.AppVersion,
-						about.LastUpdated,
-						CreatedBy = "System",
-						CreatedDate = DateTime.Now,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error adding about: {ex.Message}");
+				Console.WriteLine($"Error adding notification: {ex.Message}");
 				throw;
 			}
 		}
 
 		// Update methods
-		public async Task UpdateUserAsync(User user)
+		public async Task UpdateUserTypeAsync(UserType userType)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spUpdateUser",
+					"spUpdateUserType",
 					new
 					{
-						user.Id,
-						user.Username,
-						user.PasswordHash,
-						user.Email,
-						user.FirstName,
-						user.LastName,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						userType.Id,
+						userType.Description,
+						userType.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error updating user: {ex.Message}");
+				Console.WriteLine($"Error updating user type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task UpdateSchoolTypeAsync(SchoolType schoolType)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spUpdateSchoolType",
+					new
+					{
+						schoolType.Id,
+						schoolType.Description,
+						schoolType.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error updating school type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task UpdateSchoolAsync(School school)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spUpdateSchool",
+					new
+					{
+						school.Id,
+						school.EMISNumber,
+						school.Description,
+						school.SchoolTypeId,
+						school.Phase,
+						school.Level,
+						school.Country,
+						school.Province,
+						school.District,
+						school.Circuit,
+						school.Municipality,
+						school.UrbanRural,
+						school.AddressLine1,
+						school.AddressLine2,
+						school.TownCity,
+						school.PostalCode,
+						school.PhoneNumber,
+						school.Email,
+						school.Latitude,
+						school.Longitude,
+						school.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error updating school: {ex.Message}");
 				throw;
 			}
 		}
@@ -512,9 +566,9 @@ namespace EduTrack.Shared.Services
 					new
 					{
 						courseType.Id,
-						courseType.Name,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						courseType.Code,
+						courseType.Description,
+						courseType.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
@@ -536,18 +590,51 @@ namespace EduTrack.Shared.Services
 					new
 					{
 						course.Id,
-						course.UserId,
 						course.CourseTypeId,
-						course.Name,
-						course.DurationYears,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						course.Code,
+						course.Description,
+						course.Duration,
+						course.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error updating course: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task UpdateUserAsync(User user)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spUpdateUser",
+					new
+					{
+						user.Id,
+						user.UserTypeId,
+						user.SchoolId,
+						user.CourseId,
+						user.Username,
+						user.FirstName,
+						user.LastName,
+						user.PasswordHash,
+						user.Email,
+						user.Cellphone,
+						user.ReceiveEmailNotifications,
+						user.ReceivePushNotifications,
+						user.ThemePreference,
+						user.LastModifiedBy
+					},
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error updating user: {ex.Message}");
 				throw;
 			}
 		}
@@ -563,18 +650,12 @@ namespace EduTrack.Shared.Services
 					new
 					{
 						subject.Id,
-						subject.UserId,
 						subject.CourseId,
-						subject.Name,
+						subject.Code,
+						subject.Description,
 						subject.AcademicYear,
 						subject.PassMark,
-						subject.ClassTestWeight,
-						subject.SemesterTestWeight,
-						subject.ClassAssignmentWeight,
-						subject.SemesterAssignmentWeight,
-						subject.ExamWeight,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						subject.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
@@ -585,180 +666,137 @@ namespace EduTrack.Shared.Services
 			}
 		}
 
-		public async Task UpdateAssignmentTypeAsync(AssignmentType assignmentType)
+		public async Task UpdateAssessmentAsync(Assessment assessment)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spUpdateAssignmentType",
+					"spUpdateAssessment",
 					new
 					{
-						assignmentType.Id,
-						assignmentType.Name,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						assessment.Id,
+						assessment.SubjectId,
+						assessment.Code,
+						assessment.Description,
+						assessment.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error updating assignment type: {ex.Message}");
+				Console.WriteLine($"Error updating assessment: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task UpdateExamTypeAsync(ExamType examType)
+		public async Task UpdateResultAsync(Result result)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spUpdateExamType",
+					"spUpdateResult",
 					new
 					{
-						examType.Id,
-						examType.Name,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						result.Id,
+						result.UserId,
+						result.CourseId,
+						result.SubjectId,
+						result.AssessmentId,
+						result.Mark,
+						result.FinalMark,
+						result.Predicate,
+						result.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error updating exam type: {ex.Message}");
+				Console.WriteLine($"Error updating result: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task UpdateAssignmentAsync(Assignment assignment)
+		public async Task UpdateNotificationAsync(Notification notification)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spUpdateAssignment",
+					"spUpdateNotification",
 					new
 					{
-						assignment.Id,
-						assignment.UserId,
-						assignment.SubjectId,
-						assignment.AssignmentTypeId,
-						assignment.ExamTypeId,
-						assignment.Title,
-						assignment.Deadline,
-						assignment.Semester,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
+						notification.Id,
+						notification.UserId,
+						notification.Message,
+						notification.NotificationType,
+						notification.IsRead,
+						notification.LastModifiedBy
 					},
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error updating assignment: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task UpdateGradeAsync(Grade grade)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spUpdateGrade",
-					new
-					{
-						grade.Id,
-						grade.UserId,
-						grade.AssignmentId,
-						grade.GradeValue,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error updating grade: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task UpdateAccountAsync(Account account)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spUpdateAccount",
-					new
-					{
-						account.Id,
-						account.UserId,
-						account.ReceiveEmailNotifications,
-						account.ReceivePushNotifications,
-						account.ThemePreference,
-						account.LastLogin,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error updating account: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task UpdateAboutAsync(About about)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spUpdateAbout",
-					new
-					{
-						about.Id,
-						about.UserId,
-						about.Bio,
-						about.AppVersion,
-						about.LastUpdated,
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error updating about: {ex.Message}");
+				Console.WriteLine($"Error updating notification: {ex.Message}");
 				throw;
 			}
 		}
 
 		// Delete methods
-		public async Task DeleteUserAsync(int id)
+		public async Task DeleteUserTypeAsync(int id)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spDeleteUser",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					"spDeleteUserType",
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error deleting user: {ex.Message}");
+				Console.WriteLine($"Error deleting user type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task DeleteSchoolTypeAsync(int id)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spDeleteSchoolType",
+					new { Id = id },
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error deleting school type: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task DeleteSchoolAsync(int id)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spDeleteSchool",
+					new { Id = id },
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error deleting school: {ex.Message}");
 				throw;
 			}
 		}
@@ -771,7 +809,7 @@ namespace EduTrack.Shared.Services
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
 					"spDeleteCourseType",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
@@ -789,12 +827,30 @@ namespace EduTrack.Shared.Services
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
 					"spDeleteCourse",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error deleting course: {ex.Message}");
+				throw;
+			}
+		}
+
+		public async Task DeleteUserAsync(int id)
+		{
+			try
+			{
+				using var connection = new SqlConnection(_connectionString);
+				await connection.OpenAsync();
+				await connection.ExecuteAsync(
+					"spDeleteUser",
+					new { Id = id },
+					commandType: CommandType.StoredProcedure);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error deleting user: {ex.Message}");
 				throw;
 			}
 		}
@@ -807,7 +863,7 @@ namespace EduTrack.Shared.Services
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
 					"spDeleteSubject",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
@@ -817,164 +873,38 @@ namespace EduTrack.Shared.Services
 			}
 		}
 
-		public async Task DeleteAssignmentTypeAsync(int id)
+		public async Task DeleteAssessmentAsync(int id)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spDeleteAssignmentType",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					"spDeleteAssessment",
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error deleting assignment type: {ex.Message}");
+				Console.WriteLine($"Error deleting assessment: {ex.Message}");
 				throw;
 			}
 		}
 
-		public async Task DeleteExamTypeAsync(int id)
+		public async Task DeleteResultAsync(int id)
 		{
 			try
 			{
 				using var connection = new SqlConnection(_connectionString);
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
-					"spDeleteExamType",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					"spDeleteResult",
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error deleting exam type: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task DeleteAssignmentAsync(int id)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spDeleteAssignment",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error deleting assignment: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task DeleteGradeAsync(int id)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spDeleteGrade",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error deleting grade: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task DeleteAccountAsync(int id)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spDeleteAccount",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error deleting grade: {ex.Message}");
-				throw;
-			}
-
-		}
-
-		public async Task DeleteAboutAsync(int id)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				await connection.ExecuteAsync(
-					"spDeleteAbout",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error deleting grade: {ex.Message}");
-				throw;
-			}
-
-		}
-
-		// New Notification methods
-		public async Task<IEnumerable<Notification>> GetNotificationsAsync(int userId)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				var accounts = await connection.QueryAsync<Account>("spGetAccounts", commandType: CommandType.StoredProcedure);
-				var account = accounts.FirstOrDefault(a => a.UserId == userId);
-				if (account == null || !account.ReceivePushNotifications)
-				{
-					return new List<Notification>();
-				}
-				return await connection.QueryAsync<Notification>(
-					"spGetNotifications",
-					new { UserId = userId },
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error fetching notifications: {ex.Message}");
-				throw;
-			}
-		}
-
-		public async Task<int> AddNotificationAsync(Notification notification)
-		{
-			try
-			{
-				using var connection = new SqlConnection(_connectionString);
-				await connection.OpenAsync();
-				return await connection.ExecuteScalarAsync<int>(
-					"spAddNotification",
-					new
-					{
-						notification.UserId,
-						notification.Message,
-						notification.NotificationType,
-						CreatedDate = DateTime.Now,
-						CreatedBy = "System",
-						LastModifiedBy = "System",
-						LastModifiedDate = DateTime.Now
-					},
-					commandType: CommandType.StoredProcedure);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error adding notification: {ex.Message}");
+				Console.WriteLine($"Error deleting result: {ex.Message}");
 				throw;
 			}
 		}
@@ -987,7 +917,7 @@ namespace EduTrack.Shared.Services
 				await connection.OpenAsync();
 				await connection.ExecuteAsync(
 					"spDeleteNotification",
-					new { Id = id, LastModifiedBy = "System", LastModifiedDate = DateTime.Now },
+					new { Id = id },
 					commandType: CommandType.StoredProcedure);
 			}
 			catch (Exception ex)
@@ -995,6 +925,90 @@ namespace EduTrack.Shared.Services
 				Console.WriteLine($"Error deleting notification: {ex.Message}");
 				throw;
 			}
+		}
+
+		// New methods for tAbout
+		public async Task<IEnumerable<About>> GetAboutsAsync()
+		{
+			using var connection = new SqlConnection(_connectionString);
+			return await connection.QueryAsync<About>("spGetAbouts", commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task AddAboutAsync(About about)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			var parameters = new
+			{
+				about.UserId,
+				about.Bio,
+				about.AppVersion,
+				about.LastUpdated,
+				about.LastModifiedBy
+			};
+			await connection.ExecuteAsync("spAddAbout", parameters, commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task UpdateAboutAsync(About about)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			var parameters = new
+			{
+				about.Id,
+				about.UserId,
+				about.Bio,
+				about.AppVersion,
+				about.LastUpdated,
+				about.LastModifiedBy
+			};
+			await connection.ExecuteAsync("spUpdateAbout", parameters, commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task DeleteAboutAsync(int id)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			await connection.ExecuteAsync("spDeleteAbout", new { Id = id }, commandType: CommandType.StoredProcedure);
+		}
+
+		// New methods for tAccount
+		public async Task<IEnumerable<Account>> GetAccountsAsync()
+		{
+			using var connection = new SqlConnection(_connectionString);
+			return await connection.QueryAsync<Account>("spGetAccounts", commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task AddAccountAsync(Account account)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			var parameters = new
+			{
+				account.UserId,
+				account.ReceiveEmailNotifications,
+				account.ReceivePushNotifications,
+				account.LastLogin,
+				account.LastModifiedBy
+			};
+			await connection.ExecuteAsync("spAddAccount", parameters, commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task UpdateAccountAsync(Account account)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			var parameters = new
+			{
+				account.Id,
+				account.UserId,
+				account.ReceiveEmailNotifications,
+				account.ReceivePushNotifications,
+				account.LastLogin,
+				account.LastModifiedBy
+			};
+			await connection.ExecuteAsync("spUpdateAccount", parameters, commandType: CommandType.StoredProcedure);
+		}
+
+		public async Task DeleteAccountAsync(int id)
+		{
+			using var connection = new SqlConnection(_connectionString);
+			await connection.ExecuteAsync("spDeleteAccount", new { Id = id }, commandType: CommandType.StoredProcedure);
 		}
 	}
 }

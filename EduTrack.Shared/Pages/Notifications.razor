@@ -1,6 +1,6 @@
 ﻿
 @page "/notifications"
-@using EduTrack.Shared.Modules
+@using EduTrack.Shared.Models
 @using EduTrack.Shared.Services
 @inject IEduTrackService EduTrackService
 @inject NavigationManager NavigationManager
@@ -29,7 +29,6 @@ else
                 <div>
                     <p class="font-semibold @(!notification.IsRead ? "text-blue-600" : "text-gray-600")">@notification.NotificationType</p>
                     <p class="text-gray-700">@notification.Message</p>
-                    <p class="text-sm text-gray-500">@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
                 </div>
                 @if (!notification.IsRead)
                 {
