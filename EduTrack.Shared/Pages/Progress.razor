@@ -1,0 +1,93 @@
+﻿
+@page "/progress"
+@using EduTrack.Shared.Models
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+@inject NavigationManager NavigationManager
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<h3>Academic Progress for @username</h3>
+
+@if (results == null)
+{
+    <p>Loading...</p>
+}
+else if (!results.Any())
+{
+    <p>No results found for @username.</p>
+}
+else
+{
+    <h4>School: @schoolName</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Class Test 1</th>
+                <th>Class Test 2</th>
+                <th>Assignment</th>
+                <th>Mid-Year Exam</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var subject in grade6Subjects)
+            {
+                <tr>
+                    <td>@subject</td>
+                    <td>@GetAssessmentResult(subject, "CT1")</td>
+                    <td>@GetAssessmentResult(subject, "CT2")</td>
+                    <td>@GetAssessmentResult(subject, "ASGN")</td>
+                    <td>@GetAssessmentResult(subject, "MID")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<StudentResultDto> results;
+    private string schoolName;
+    private string username = "bthibela";
+    private int userId;
+    private readonly List<string> grade6Subjects = new List<string>
+    {
+        "English",
+        "Afrikaans",
+        "Mathematics",
+        "Natural Science and Technology",
+        "Life Skills",
+        "Social Science",
+        "Northern Sotho"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch user to get UserId for bthibela
+        var users = await EduTrackService.GetUsersAsync();
+        var user = users.FirstOrDefault(u => u.Username == username);
+        if (user == null)
+        {
+            results = new List<StudentResultDto>();
+            return;
+        }
+        userId = user.Id;
+
+        // Fetch student results for bthibela
+        results = await EduTrackService.GetStudentResultsAsync(userId);
+
+        // Set school name (assuming all results have the same School)
+        schoolName = results.FirstOrDefault()?.School ?? "Unknown School";
+
+        // Filter results to ensure only Grade 6 subjects are considered
+        results = results.Where(r => grade6Subjects.Contains(r.SubjectDescription)).ToList();
+    }
+
+    private string GetAssessmentResult(string subject, string assessmentCode)
+    {
+        var result = results.FirstOrDefault(r => r.SubjectDescription == subject && r.AssessmentCode == assessmentCode);
+        if (result == null)
+            return "N/A";
+        return $"{result.Mark:F2} ({result.Predicate})";
+    }
+}

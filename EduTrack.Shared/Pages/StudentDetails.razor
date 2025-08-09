@@ -1,0 +1,82 @@
+﻿@page "/studentdetails"
+@using EduTrack.Shared.Models
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Student Details</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (studentDetails == null || !studentDetails.Any())
+{
+    <p>No student result data available.</p>
+}
+else
+{
+    var student = studentDetails.First();
+
+    <div class="mb-6 space-y-1">
+        <p><strong>Username:</strong> @student.Username</p>
+        <p><strong>First Name:</strong> @student.FirstName</p>
+        <p><strong>Last Name:</strong> @student.LastName</p>
+        <p><strong>Email:</strong> @student.Email</p>
+        <p><strong>School:</strong> @student.School</p>
+        <p><strong>Course Code:</strong> @student.CourseCode</p>
+        <p><strong>Course Description:</strong> @student.CourseDescription</p>
+        <p><strong>Course Type:</strong> @student.CourseType</p>
+    </div>
+
+    <table class="min-w-full bg-white border border-gray-300 text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 border-b">Subject Code</th>
+                <th class="py-2 px-4 border-b">Subject Description</th>
+                <th class="py-2 px-4 border-b">Academic Year</th>
+                <th class="py-2 px-4 border-b">Pass Mark</th>
+                <th class="py-2 px-4 border-b">Assessment Code</th>
+                <th class="py-2 px-4 border-b">Assessment Description</th>
+                <th class="py-2 px-4 border-b">Mark</th>
+                <th class="py-2 px-4 border-b">Final Mark</th>
+                <th class="py-2 px-4 border-b">Predicate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in studentDetails)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@detail.SubjectCode</td>
+                    <td class="py-2 px-4 border-b">@detail.SubjectDescription</td>
+                    <td class="py-2 px-4 border-b">@detail.AcademicYear</td>
+                    <td class="py-2 px-4 border-b">@detail.PassMark</td>
+                    <td class="py-2 px-4 border-b">@detail.AssessmentCode</td>
+                    <td class="py-2 px-4 border-b">@detail.AssessmentDescription</td>
+                    <td class="py-2 px-4 border-b">@detail.Mark</td>
+                    <td class="py-2 px-4 border-b">@detail.FinalMark</td>
+                    <td class="py-2 px-4 border-b">@detail.Predicate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<StudentResultDto>? studentDetails;
+    private string? errorMessage;
+    private int studentId = 1; // Example: Student1
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            studentDetails = await EduTrackService.GetStudentResultsAsync(studentId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading student details: {ex.Message}";
+        }
+    }
+}

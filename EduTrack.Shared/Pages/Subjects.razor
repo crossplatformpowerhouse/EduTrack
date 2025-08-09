@@ -1,0 +1,81 @@
+﻿@page "/subjects"
+@using EduTrack.Shared.Models
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Subjects</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (subjects == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="min-w-full bg-white border border-gray-300 text-sm">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="py-2 px-4 border-b text-left">ID</th>
+                <th class="py-2 px-4 border-b text-left">Subject Name</th>
+                <th class="py-2 px-4 border-b text-left">Academic Year</th>
+                <th class="py-2 px-4 border-b text-left">Pass Mark</th>
+                <th class="py-2 px-4 border-b text-left">Course</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var subject in subjects)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@subject.Id</td>
+                    <td class="py-2 px-4 border-b">@subject.Description</td>
+                    <td class="py-2 px-4 border-b">@subject.AcademicYear</td>
+                    <td class="py-2 px-4 border-b">@subject.PassMark</td>
+                    <td class="py-2 px-4 border-b">@GetCourseName(subject.CourseId)</td>
+     
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Subject>? subjects;
+    private IEnumerable<Course>? courses;
+    private IEnumerable<User>? users;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var subjectTask = EduTrackService.GetSubjectsAsync();
+            var courseTask = EduTrackService.GetCoursesAsync();
+            var userTask = EduTrackService.GetUsersAsync();
+
+            await Task.WhenAll(subjectTask, courseTask, userTask);
+
+            subjects = subjectTask.Result;
+            courses = courseTask.Result;
+            users = userTask.Result;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading subjects: {ex.Message}";
+        }
+    }
+
+    private string GetCourseName(int courseId) =>
+        courses?.FirstOrDefault(c => c.Id == courseId)?.Description ?? "Unknown";
+
+    private string GetUserName(int userId)
+    {
+        var user = users?.FirstOrDefault(u => u.Id == userId);
+        return user != null ? $"{user.FirstName} {user.LastName}" : "Unknown";
+    }
+}

@@ -1,0 +1,155 @@
+﻿@page "/abouts"
+@using EduTrack.Shared.Models
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Abouts</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (abouts == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="min-w-full bg-white border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="py-2 px-4 border-b">ID</th>
+                <th class="py-2 px-4 border-b">Username</th>
+                <th class="py-2 px-4 border-b">Bio</th>
+                <th class="py-2 px-4 border-b">App Version</th>
+                <th class="py-2 px-4 border-b">Last Updated</th>
+                <th class="py-2 px-4 border-b">Last Modified By</th>
+                <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var about in abouts)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@about.Id</td>
+                    <td class="py-2 px-4 border-b">@(users.FirstOrDefault(u => u.Id == about.UserId)?.Username ?? "N/A")</td>
+                    <td class="py-2 px-4 border-b">@(about.Bio?.Length > 50 ? about.Bio.Substring(0, 50) + "..." : about.Bio)</td>
+                    <td class="py-2 px-4 border-b">@about.AppVersion</td>
+                    <td class="py-2 px-4 border-b">@about.LastUpdated</td>
+                    <td class="py-2 px-4 border-b">@about.LastModifiedBy</td>
+                    <td class="py-2 px-4 border-b">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" @onclick="() => EditAbout(about)">Edit</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded ml-2" @onclick="() => DeleteAbout(about.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-xl font-bold mt-6 mb-4">@(editAbout.Id == 0 ? "Add About" : "Edit About")</h4>
+    <EditForm Model="editAbout" OnValidSubmit="SaveAbout">
+        <DataAnnotationsValidator />
+        <div class="mb-4">
+            <label class="block text-gray-700">User</label>
+            <InputSelect @bind-Value="editAbout.UserId" class="w-full border border-gray-300 rounded p-2">
+                <option value="0">Select...</option>
+                @foreach (var user in users)
+                {
+                    <option value="@user.Id">@user.Username</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Bio</label>
+            <InputTextArea @bind-Value="editAbout.Bio" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">App Version</label>
+            <InputText @bind-Value="editAbout.AppVersion" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Last Updated</label>
+            <InputText @bind-Value="editAbout.LastUpdated" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+        <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private IEnumerable<About>? abouts;
+    private IEnumerable<User>? users;
+    private About editAbout = new About();
+    private string? errorMessage;
+    private const string currentUsername = "bthibela";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            abouts = await EduTrackService.GetAboutsAsync();
+            users = await EduTrackService.GetUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading abouts: {ex.Message}";
+        }
+    }
+
+    private void EditAbout(About about)
+    {
+        editAbout = new About
+        {
+            Id = about.Id,
+            UserId = about.UserId,
+            Bio = about.Bio,
+            AppVersion = about.AppVersion,
+            LastUpdated = about.LastUpdated,
+            LastModifiedBy = currentUsername
+        };
+    }
+
+    private async Task SaveAbout()
+    {
+        try
+        {
+            editAbout.LastModifiedBy = currentUsername;
+            if (editAbout.Id == 0)
+            {
+                await EduTrackService.AddAboutAsync(editAbout);
+            }
+            else
+            {
+                await EduTrackService.UpdateAboutAsync(editAbout);
+            }
+            abouts = await EduTrackService.GetAboutsAsync();
+            editAbout = new About();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving about: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteAbout(int id)
+    {
+        try
+        {
+            await EduTrackService.DeleteAboutAsync(id);
+            abouts = await EduTrackService.GetAboutsAsync();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting about: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editAbout = new About();
+        errorMessage = null;
+    }
+}

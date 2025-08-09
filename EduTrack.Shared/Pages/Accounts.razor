@@ -1,0 +1,155 @@
+﻿@page "/accounts"
+@using EduTrack.Shared.Models
+@using EduTrack.Shared.Services
+@inject IEduTrackService EduTrackService
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<h3 class="text-2xl font-bold mb-4">Accounts</h3>
+
+@if (errorMessage != null)
+{
+    <p class="text-red-500">@errorMessage</p>
+}
+else if (accounts == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="min-w-full bg-white border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="py-2 px-4 border-b">ID</th>
+                <th class="py-2 px-4 border-b">Username</th>
+                <th class="py-2 px-4 border-b">Email Notifications</th>
+                <th class="py-2 px-4 border-b">Push Notifications</th>
+                <th class="py-2 px-4 border-b">Last Login</th>
+                <th class="py-2 px-4 border-b">Last Modified By</th>
+                <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in accounts)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2 px-4 border-b">@account.Id</td>
+                    <td class="py-2 px-4 border-b">@(users.FirstOrDefault(u => u.Id == account.UserId)?.Username ?? "N/A")</td>
+                    <td class="py-2 px-4 border-b">@account.ReceiveEmailNotifications</td>
+                    <td class="py-2 px-4 border-b">@account.ReceivePushNotifications</td>
+                    <td class="py-2 px-4 border-b">@account.LastLogin.ToString("g")</td>
+                    <td class="py-2 px-4 border-b">@account.LastModifiedBy</td>
+                    <td class="py-2 px-4 border-b">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" @onclick="() => EditAccount(account)">Edit</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded ml-2" @onclick="() => DeleteAccount(account.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-xl font-bold mt-6 mb-4">@(editAccount.Id == 0 ? "Add Account" : "Edit Account")</h4>
+    <EditForm Model="editAccount" OnValidSubmit="SaveAccount">
+        <DataAnnotationsValidator />
+        <div class="mb-4">
+            <label class="block text-gray-700">User</label>
+            <InputSelect @bind-Value="editAccount.UserId" class="w-full border border-gray-300 rounded p-2">
+                <option value="0">Select...</option>
+                @foreach (var user in users)
+                {
+                    <option value="@user.Id">@user.Username</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Email Notifications</label>
+            <InputText @bind-Value="editAccount.ReceiveEmailNotifications" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Push Notifications</label>
+            <InputText @bind-Value="editAccount.ReceivePushNotifications" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700">Last Login</label>
+            <InputDate @bind-Value="editAccount.LastLogin" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+        <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private IEnumerable<Account>? accounts;
+    private IEnumerable<User>? users;
+    private Account editAccount = new Account();
+    private string? errorMessage;
+    private const string currentUsername = "bthibela";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            accounts = await EduTrackService.GetAccountsAsync();
+            users = await EduTrackService.GetUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading accounts: {ex.Message}";
+        }
+    }
+
+    private void EditAccount(Account account)
+    {
+        editAccount = new Account
+        {
+            Id = account.Id,
+            UserId = account.UserId,
+            ReceiveEmailNotifications = account.ReceiveEmailNotifications,
+            ReceivePushNotifications = account.ReceivePushNotifications,
+            LastLogin = account.LastLogin,
+            LastModifiedBy = currentUsername
+        };
+    }
+
+    private async Task SaveAccount()
+    {
+        try
+        {
+            editAccount.LastModifiedBy = currentUsername;
+            if (editAccount.Id == 0)
+            {
+                await EduTrackService.AddAccountAsync(editAccount);
+            }
+            else
+            {
+                await EduTrackService.UpdateAccountAsync(editAccount);
+            }
+            accounts = await EduTrackService.GetAccountsAsync();
+            editAccount = new Account();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving account: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteAccount(int id)
+    {
+        try
+        {
+            await EduTrackService.DeleteAccountAsync(id);
+            accounts = await EduTrackService.GetAccountsAsync();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting account: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editAccount = new Account();
+        errorMessage = null;
+    }
+}
