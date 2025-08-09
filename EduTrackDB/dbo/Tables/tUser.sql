@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[tUser] (
+    [Id]                        INT            IDENTITY (1, 1) NOT NULL,
+    [UserTypeId]                INT            NOT NULL,
+    [SchoolId]                  INT            NOT NULL,
+    [CourseId]                  INT            NOT NULL,
+    [Username]                  NVARCHAR (255) NOT NULL,
+    [FirstName]                 NVARCHAR (255) NULL,
+    [LastName]                  NVARCHAR (255) NULL,
+    [PasswordHash]              NVARCHAR (255) NULL,
+    [Email]                     NVARCHAR (255) NULL,
+    [Cellphone]                 NVARCHAR (255) NULL,
+    [ReceiveEmailNotifications] BIT            DEFAULT ((1)) NOT NULL,
+    [ReceivePushNotifications]  BIT            DEFAULT ((1)) NOT NULL,
+    [ThemePreference]           NVARCHAR (50)  DEFAULT ('System') NULL,
+    [LastLogin]                 DATETIME       NULL,
+    [IsDeleted]                 BIT            DEFAULT ((0)) NOT NULL,
+    [CreatedBy]                 NVARCHAR (255) NULL,
+    [CreatedDate]               DATETIME       DEFAULT (getdate()) NOT NULL,
+    [LastModifiedBy]            NVARCHAR (255) NULL,
+    [LastModifiedDate]          DATETIME       DEFAULT (getdate()) NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),
+    FOREIGN KEY ([CourseId]) REFERENCES [dbo].[tCourse] ([Id]),
+    FOREIGN KEY ([UserTypeId]) REFERENCES [dbo].[tUserType] ([Id])
+);
+

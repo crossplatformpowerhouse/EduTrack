@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>EduTrackDB</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{90b61b0f-edf2-42b0-9a2c-3078f2ed219e}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>EduTrackDB</RootNamespace>
+    <AssemblyName>EduTrackDB</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\tUserType.sql" />
+    <Build Include="dbo\Tables\tUser.sql" />
+    <Build Include="dbo\Tables\tSubject.sql" />
+    <Build Include="dbo\Tables\tSchoolType.sql" />
+    <Build Include="dbo\Tables\tSchool.sql" />
+    <Build Include="dbo\Tables\tResult.sql" />
+    <Build Include="dbo\Tables\tNotification.sql" />
+    <Build Include="dbo\Tables\tCourseType.sql" />
+    <Build Include="dbo\Tables\tCourse.sql" />
+    <Build Include="dbo\Tables\tAssessment.sql" />
+    <Build Include="dbo\Tables\tAccount.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateUserType.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateUser.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateSubject.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateSchoolType.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateSchool.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateResult.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateNotification.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateCourseType.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateCourse.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateAssessment.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateAccount.sql" />
+    <Build Include="dbo\Stored Procedures\spUpdateAbout.sql" />
+    <Build Include="dbo\Stored Procedures\spGetUserTypes.sql" />
+    <Build Include="dbo\Stored Procedures\spGetUsers.sql" />
+    <Build Include="dbo\Stored Procedures\spGetSubjects.sql" />
+    <Build Include="dbo\Stored Procedures\spGetStudentResults.sql" />
+    <Build Include="dbo\Stored Procedures\spGetSchoolTypes.sql" />
+    <Build Include="dbo\Stored Procedures\spGetSchools.sql" />
+    <Build Include="dbo\Stored Procedures\spGetResults.sql" />
+    <Build Include="dbo\Stored Procedures\spGetNotifications.sql" />
+    <Build Include="dbo\Stored Procedures\spGetCourseTypes.sql" />
+    <Build Include="dbo\Stored Procedures\spGetCourses.sql" />
+    <Build Include="dbo\Stored Procedures\spGetAssessments.sql" />
+    <Build Include="dbo\Stored Procedures\spGetAccounts.sql" />
+    <Build Include="dbo\Stored Procedures\spGetAbouts.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteUserType.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteUser.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteSubject.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteSchoolType.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteSchool.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteResult.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteNotification.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteCourseType.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteCourse.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteAssessment.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteAccount.sql" />
+    <Build Include="dbo\Stored Procedures\spDeleteAbout.sql" />
+    <Build Include="dbo\Stored Procedures\spAddUserType.sql" />
+    <Build Include="dbo\Stored Procedures\spAddUser.sql" />
+    <Build Include="dbo\Stored Procedures\spAddSubject.sql" />
+    <Build Include="dbo\Stored Procedures\spAddSchoolType.sql" />
+    <Build Include="dbo\Stored Procedures\spAddSchool.sql" />
+    <Build Include="dbo\Stored Procedures\spAddResult.sql" />
+    <Build Include="dbo\Stored Procedures\spAddNotification.sql" />
+    <Build Include="dbo\Stored Procedures\spAddCourseType.sql" />
+    <Build Include="dbo\Stored Procedures\spAddCourse.sql" />
+    <Build Include="dbo\Stored Procedures\spAddAssessment.sql" />
+    <Build Include="dbo\Stored Procedures\spAddAccount.sql" />
+    <Build Include="dbo\Stored Procedures\spAddAbout.sql" />
+  </ItemGroup>
+</Project>
